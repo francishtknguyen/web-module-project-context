@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Route } from 'react-router-dom';
 import data from './data';
 
@@ -13,15 +13,18 @@ function App() {
 	const [products] = useState(data);
 	const [cart, setCart] = useState([]);
 
+	const localCart = useRef([]);
 	const addItem = item => {
 		console.log(item)
-		if(cart.find((i)=> i ===item)) 
+		if(cart.find((i)=> i ===item)){ 
 			return
+		}
 		// add the given item to the cart
 		setCart([
 			...cart,
 			item
 		])
+		localCart.current.push(item)
 	};
 
 	const removeItem = id => {
@@ -29,8 +32,14 @@ function App() {
 	}
 
 	useEffect(()=> {
-		localStorage.setItem('cart', JSON.stringify(cart))
-	},[cart])
+		if(localCart.current.length)
+			localStorage.setItem('cart', JSON.stringify(localCart.current))
+	}, [cart, localCart])
+
+	useEffect(()=>{
+		if(localStorage.getItem('cart'))
+			setCart(JSON.parse(localStorage.getItem('cart')));
+	}, [])
 
 	return (
 		<ProductContext.Provider value={{products, addItem}}>
